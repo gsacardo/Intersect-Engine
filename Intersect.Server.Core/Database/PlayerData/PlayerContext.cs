@@ -1,10 +1,12 @@
 using Intersect.Extensions;
+using Intersect.Core;
 using Intersect.Server.Database.PlayerData.Api;
 using Intersect.Server.Database.PlayerData.Migrations;
 using Intersect.Server.Database.PlayerData.Players;
 using Intersect.Server.Database.PlayerData.SeedData;
 using Intersect.Server.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Intersect.Server.Database.PlayerData;
 
@@ -136,6 +138,77 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
         {
             GuildBankMaxSlotMigration.Run(this);
         }
+
+        EnsurePlayerHairColumn();
+    }
+
+    private void EnsurePlayerHairColumn()
+    {
+        var databaseType = DatabaseType;
+        if (ColumnExists("Players", "Hair"))
+        {
+            return;
+        }
+
+        ApplicationContext.Context.Value?.Logger.LogInformation(
+            "Applying schema compatibility patch for Players.Hair on {DatabaseType}.",
+            databaseType
+        );
+
+        ExecuteNonQuery(
+            databaseType switch
+            {
+                Intersect.Config.DatabaseType.Sqlite => "ALTER TABLE \"Players\" ADD COLUMN \"Hair\" TEXT NULL;",
+                Intersect.Config.DatabaseType.MySql => "ALTER TABLE `Players` ADD COLUMN `Hair` longtext NULL;",
+                _ => throw new DatabaseTypeInvalidException(databaseType),
+            }
+        );
+
+        ExecuteNonQuery(
+            databaseType switch
+            {
+                Intersect.Config.DatabaseType.Sqlite => "UPDATE \"Players\" SET \"Hair\" = '' WHERE \"Hair\" IS NULL;",
+                Intersect.Config.DatabaseType.MySql => "UPDATE `Players` SET `Hair` = '' WHERE `Hair` IS NULL;",
+                _ => throw new DatabaseTypeInvalidException(databaseType),
+            }
+        );
+    }
+
+    private bool ColumnExists(string tableName, string columnName)
+    {
+        var databaseType = DatabaseType;
+        Database.OpenConnection();
+        using var command = Database.GetDbConnection().CreateCommand();
+        command.CommandText = databaseType switch
+        {
+            Intersect.Config.DatabaseType.Sqlite => $"PRAGMA table_info(\"{tableName}\");",
+            Intersect.Config.DatabaseType.MySql => $"SHOW COLUMNS FROM `{tableName}` LIKE '{columnName}';",
+            _ => throw new DatabaseTypeInvalidException(databaseType),
+        };
+
+        using var reader = command.ExecuteReader();
+        if (databaseType == Intersect.Config.DatabaseType.Sqlite)
+        {
+            while (reader.Read())
+            {
+                if (string.Equals(reader["name"]?.ToString(), columnName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        return reader.Read();
+    }
+
+    private void ExecuteNonQuery(string commandText)
+    {
+        Database.OpenConnection();
+        using var command = Database.GetDbConnection().CreateCommand();
+        command.CommandText = commandText;
+        command.ExecuteNonQuery();
     }
 
     public void StopTrackingUsersExcept(User user)

@@ -10,9 +10,11 @@ using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.Framework.Core.GameObjects.Resources;
 using Intersect.Framework.Core.GameObjects.Variables;
 using Intersect.GameObjects;
+using Intersect.Core;
 using Intersect.Server.Database.GameData.Migrations;
 using Intersect.Server.Maps;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Intersect.Server.Database.GameData;
 
@@ -112,6 +114,77 @@ public abstract partial class GameContext : IntersectDbContext<GameContext>, IGa
         {
             FixQuestTaskCompletionEventsMigration.Run(this);
         }
+
+        EnsureClassHairColumns();
+    }
+
+    private void EnsureClassHairColumns()
+    {
+        var databaseType = DatabaseType;
+        if (ColumnExists("Classes", "Hairs"))
+        {
+            return;
+        }
+
+        ApplicationContext.Context.Value?.Logger.LogInformation(
+            "Applying schema compatibility patch for Classes.Hairs on {DatabaseType}.",
+            databaseType
+        );
+
+        ExecuteNonQuery(
+            databaseType switch
+            {
+                Intersect.Config.DatabaseType.Sqlite => "ALTER TABLE \"Classes\" ADD COLUMN \"Hairs\" TEXT NULL;",
+                Intersect.Config.DatabaseType.MySql => "ALTER TABLE `Classes` ADD COLUMN `Hairs` longtext NULL;",
+                _ => throw new DatabaseTypeInvalidException(databaseType),
+            }
+        );
+
+        ExecuteNonQuery(
+            databaseType switch
+            {
+                Intersect.Config.DatabaseType.Sqlite => "UPDATE \"Classes\" SET \"Hairs\" = '[]' WHERE \"Hairs\" IS NULL;",
+                Intersect.Config.DatabaseType.MySql => "UPDATE `Classes` SET `Hairs` = '[]' WHERE `Hairs` IS NULL;",
+                _ => throw new DatabaseTypeInvalidException(databaseType),
+            }
+        );
+    }
+
+    private bool ColumnExists(string tableName, string columnName)
+    {
+        var databaseType = DatabaseType;
+        Database.OpenConnection();
+        using var command = Database.GetDbConnection().CreateCommand();
+        command.CommandText = databaseType switch
+        {
+            Intersect.Config.DatabaseType.Sqlite => $"PRAGMA table_info(\"{tableName}\");",
+            Intersect.Config.DatabaseType.MySql => $"SHOW COLUMNS FROM `{tableName}` LIKE '{columnName}';",
+            _ => throw new DatabaseTypeInvalidException(databaseType),
+        };
+
+        using var reader = command.ExecuteReader();
+        if (databaseType == Intersect.Config.DatabaseType.Sqlite)
+        {
+            while (reader.Read())
+            {
+                if (string.Equals(reader["name"]?.ToString(), columnName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        return reader.Read();
+    }
+
+    private void ExecuteNonQuery(string commandText)
+    {
+        Database.OpenConnection();
+        using var command = Database.GetDbConnection().CreateCommand();
+        command.CommandText = commandText;
+        command.ExecuteNonQuery();
     }
 
     internal static partial class Queries

@@ -221,6 +221,7 @@ public static partial class DbInterface
         if (!context.HasPendingMigrations)
         {
             ApplicationContext.Context.Value?.Logger.LogDebug($"No pending migrations for {context.GetType().GetName(qualified: true)}, skipping...");
+            context.OnSchemaMigrationsProcessed(Array.Empty<string>());
             return;
         }
 

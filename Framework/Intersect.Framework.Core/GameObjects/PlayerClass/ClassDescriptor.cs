@@ -118,6 +118,9 @@ public partial class ClassDescriptor : DatabaseObject<ClassDescriptor>, IFoldera
     [NotMapped]
     public List<ClassSprite> Sprites { get; set; } = [];
 
+    [NotMapped]
+    public List<string> Hairs { get; set; } = [];
+
     [NotMapped, JsonIgnore]
     public int[] StatIncrease { get; set; } = new int[Enum.GetValues<Stat>().Length];
 
@@ -275,7 +278,15 @@ public partial class ClassDescriptor : DatabaseObject<ClassDescriptor>, IFoldera
     public string JsonSprites
     {
         get => JsonConvert.SerializeObject(Sprites);
-        protected set => Sprites = JsonConvert.DeserializeObject<List<ClassSprite>>(value);
+        protected set => Sprites = JsonConvert.DeserializeObject<List<ClassSprite>>(value) ?? [];
+    }
+
+    [JsonIgnore]
+    [Column("Hairs")]
+    public string JsonHairs
+    {
+        get => JsonConvert.SerializeObject(Hairs);
+        protected set => Hairs = JsonConvert.DeserializeObject<List<string>>(value) ?? [];
     }
 
     //Stat Increases (per level)

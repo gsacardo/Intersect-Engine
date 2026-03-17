@@ -12,6 +12,6 @@ public partial class NpcEntityPacket : EntityPacket
     }
 
 
-    [Key(24)]
+    [Key(25)]
     public NpcAggression Aggression { get; set; }
 }

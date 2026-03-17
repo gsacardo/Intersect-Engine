@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using MessagePack;
 
 namespace Intersect.Network.Packets.Server;
@@ -80,5 +80,8 @@ public abstract partial class EntityPacket : IntersectPacket
 
     [Key(23)]
     public Color Color { get; set; }
+
+    [Key(24)]
+    public string Hair { get; set; }
 
 }

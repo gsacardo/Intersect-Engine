@@ -105,9 +105,10 @@ public partial class CharacterWindow
 
         mCharacterPortrait = new ImagePanel(mCharacterContainer);
 
-        PaperdollPanels = new ImagePanel[Options.Instance.Equipment.Slots.Count + 1];
-        PaperdollTextures = new string[Options.Instance.Equipment.Slots.Count + 1];
-        for (var i = 0; i <= Options.Instance.Equipment.Slots.Count; i++)
+        var paperdollLayerCount = Options.Instance.Equipment.Paperdoll.Directions[1].Count;
+        PaperdollPanels = new ImagePanel[paperdollLayerCount];
+        PaperdollTextures = new string[paperdollLayerCount];
+        for (var i = 0; i < paperdollLayerCount; i++)
         {
             PaperdollPanels[i] = new ImagePanel(mCharacterContainer);
             PaperdollTextures[i] = string.Empty;
@@ -223,15 +224,21 @@ public partial class CharacterWindow
             for (var z = 0; z < Options.Instance.Equipment.Paperdoll.Directions[1].Count; z++)
             {
                 var paperdoll = string.Empty;
-                if (Options.Instance.Equipment.Slots.IndexOf(Options.Instance.Equipment.Paperdoll.Directions[1][z]) > -1)
+                var paperdollLayer = Options.Instance.Equipment.Paperdoll.Directions[1][z];
+                if (string.Equals(paperdollLayer, "Hair", StringComparison.Ordinal))
+                {
+                    paperdoll = Globals.Me.Hair;
+                    PaperdollPanels[z].RenderColor = Globals.Me.Color;
+                }
+                else if (Options.Instance.Equipment.Slots.IndexOf(paperdollLayer) > -1)
                 {
                     var equipment = Globals.Me.MyEquipment;
-                    if (equipment[Options.Instance.Equipment.Slots.IndexOf(Options.Instance.Equipment.Paperdoll.Directions[1][z])] > -1 &&
-                        equipment[Options.Instance.Equipment.Slots.IndexOf(Options.Instance.Equipment.Paperdoll.Directions[1][z])] <
+                    if (equipment[Options.Instance.Equipment.Slots.IndexOf(paperdollLayer)] > -1 &&
+                        equipment[Options.Instance.Equipment.Slots.IndexOf(paperdollLayer)] <
                         Options.Instance.Player.MaxInventory)
                     {
                         var itemNum = Globals.Me
-                            .Inventory[equipment[Options.Instance.Equipment.Slots.IndexOf(Options.Instance.Equipment.Paperdoll.Directions[1][z])]]
+                            .Inventory[equipment[Options.Instance.Equipment.Slots.IndexOf(paperdollLayer)]]
                             .ItemId;
 
                         if (ItemDescriptor.TryGet(itemNum, out var itemDescriptor))
@@ -294,7 +301,7 @@ public partial class CharacterWindow
         else if (Globals.Me.Sprite != mCurrentSprite && Globals.Me.Face != mCurrentSprite)
         {
             mCharacterPortrait.IsHidden = true;
-            for (var i = 0; i < Options.Instance.Equipment.Slots.Count; i++)
+            for (var i = 0; i < PaperdollPanels.Length; i++)
             {
                 PaperdollPanels[i].Hide();
             }

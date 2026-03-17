@@ -114,6 +114,8 @@ public abstract partial class Entity : IEntity
 
     public string Face { get; set; }
 
+    public string Hair { get; set; } = string.Empty;
+
     public int Level { get; set; }
 
     [JsonIgnore, Column("Vitals")]
@@ -3229,6 +3231,7 @@ public abstract partial class Entity : IEntity
         packet.Sprite = Sprite;
         packet.Color = Color;
         packet.Face = Face;
+        packet.Hair = Hair;
         packet.Level = Level;
         packet.Position = new Vector3(X, Y, Z);
         packet.Dir = (byte)Dir;

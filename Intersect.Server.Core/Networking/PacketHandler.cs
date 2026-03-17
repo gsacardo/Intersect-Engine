@@ -1615,9 +1615,14 @@ internal sealed partial class PacketHandler
         newChar.ClassId = packet.ClassId;
         newChar.Level = 1;
 
+        if (!string.IsNullOrEmpty(packet.Hair) && (classBase.Hairs?.Contains(packet.Hair) ?? false))
+        {
+            newChar.Hair = packet.Hair;
+        }
+
         if (classBase.Sprites.Count > 0)
         {
-            var spriteIndex = Math.Max(0, Math.Min(classBase.Sprites.Count, packet.Sprite));
+            var spriteIndex = Math.Max(0, Math.Min(classBase.Sprites.Count - 1, packet.Sprite));
             newChar.Sprite = classBase.Sprites[spriteIndex].Sprite;
             newChar.Face = classBase.Sprites[spriteIndex].Face;
             newChar.Gender = classBase.Sprites[spriteIndex].Gender;

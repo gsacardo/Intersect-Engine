@@ -43,6 +43,8 @@ public static partial class GameContentManager
 
         Misc,
 
+        Hair,
+
     }
 
     //Game Content
@@ -62,6 +64,8 @@ public static partial class GameContentManager
     static IDictionary<string, Texture> sFaceDict = new Dictionary<string, Texture>();
 
     static IDictionary<string, Texture> sFogDict = new Dictionary<string, Texture>();
+
+    static IDictionary<string, Texture> sHairDict = new Dictionary<string, Texture>();
 
     static IDictionary<string, Texture> sGuiDict = new Dictionary<string, Texture>();
 
@@ -126,6 +130,7 @@ public static partial class GameContentManager
         LoadFogs();
         LoadResources();
         LoadPaperdolls();
+        LoadHairs();
         LoadGui();
         LoadFaces();
         LoadItems();
@@ -318,6 +323,11 @@ public static partial class GameContentManager
         LoadTextureGroup("paperdolls", sPaperdollDict);
     }
 
+    private static void LoadHairs()
+    {
+        LoadTextureGroup("hairs", sHairDict);
+    }
+
     private static void LoadMisc()
     {
         LoadTextureGroup("misc", sMiscDict);
@@ -452,6 +462,10 @@ public static partial class GameContentManager
                 textureDict = sMiscDict;
 
                 break;
+            case TextureType.Hair:
+                textureDict = sHairDict;
+
+                break;
             default:
                 return null;
         }
@@ -578,6 +592,10 @@ public static partial class GameContentManager
                 break;
             case TextureType.Misc:
                 textureDict = sMiscDict;
+
+                break;
+            case TextureType.Hair:
+                textureDict = sHairDict;
 
                 break;
             default:

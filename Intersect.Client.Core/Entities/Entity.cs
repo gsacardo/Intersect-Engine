@@ -99,6 +99,8 @@ public partial class Entity : IEntity
     //Extras
     public string Face { get; set; } = string.Empty;
 
+    public string Hair { get; set; } = string.Empty;
+
     public Label FooterLabel { get; set; } = new(string.Empty, Color.White);
 
     public Gender Gender { get; set; } = Gender.Male;
@@ -404,6 +406,7 @@ public partial class Entity : IEntity
         Sprite = packet.Sprite;
         Color = packet.Color;
         Face = packet.Face;
+        Hair = packet.Hair;
         Level = packet.Level;
         Position = packet.Position;
         DirectionFacing = (Direction)packet.Dir;
@@ -1312,6 +1315,10 @@ public partial class Entity : IEntity
             {
                 Graphics.DrawGameTexture(texture, srcRectangle, destRectangle, renderColor);
             }
+            else if (string.Equals("Hair", paperdoll, StringComparison.Ordinal))
+            {
+                DrawHair(renderColor);
+            }
             else if (equipSlot > -1)
             {
                 //Don't render the paperdolls if they have transformed.
@@ -1585,6 +1592,69 @@ public partial class Entity : IEntity
         }
 
         return y;
+    }
+
+    public virtual void DrawHair(Color renderColor)
+    {
+        if (string.IsNullOrEmpty(Hair))
+        {
+            return;
+        }
+
+        IGameTexture? hairTex = null;
+        var spriteFrames = SpriteFrames;
+
+        var filenameNoExt = Path.GetFileNameWithoutExtension(Hair);
+
+        if (SpriteAnimation is SpriteAnimations.Attack or
+            SpriteAnimations.Cast or SpriteAnimations.Weapon or SpriteAnimations.Shoot)
+        {
+            var animationName = Path.GetFileNameWithoutExtension(AnimatedTextures[SpriteAnimation].Name);
+            var separatorIndex = animationName.IndexOf('_') + 1;
+            var customAnimationName = animationName[separatorIndex..];
+
+            var customHairTex = Globals.ContentManager.GetTexture(TextureType.Hair, $"{filenameNoExt}_{customAnimationName}.png");
+            if (customHairTex != null)
+            {
+                hairTex = customHairTex;
+            }
+        }
+
+        if (hairTex == null && !string.IsNullOrEmpty($"{SpriteAnimation}"))
+        {
+            hairTex = Globals.ContentManager.GetTexture(TextureType.Hair, $"{filenameNoExt}_{SpriteAnimation}.png");
+        }
+
+        if (hairTex == null)
+        {
+            hairTex = Globals.ContentManager.GetTexture(TextureType.Hair, Hair);
+            spriteFrames = Options.Instance.Sprites.NormalFrames;
+        }
+
+        if (hairTex == null)
+        {
+            return;
+        }
+
+        var spriteRow = PickSpriteRow(DirectionFacing);
+        var frameWidth = hairTex.Width / spriteFrames;
+        var frameHeight = hairTex.Height / Options.Instance.Sprites.Directions;
+
+        var frame = SpriteFrame;
+        if (SpriteAnimation == SpriteAnimations.Normal)
+        {
+            frame = NormalSpriteAnimationFrame;
+        }
+
+        var srcRectangle = new FloatRect(frame * frameWidth, spriteRow * frameHeight, frameWidth, frameHeight);
+        var destRectangle = new FloatRect(
+            (int)Math.Ceiling(Origin.X - frameWidth / 2f),
+            (int)Math.Ceiling(Origin.Y - frameHeight),
+            srcRectangle.Width,
+            srcRectangle.Height
+        );
+
+        Graphics.DrawGameTexture(hairTex, srcRectangle, destRectangle, renderColor);
     }
 
     public void DrawLabels(

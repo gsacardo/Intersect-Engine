@@ -40,6 +40,81 @@ public partial class FrmClass : EditorForm
         }
 
         lstGameObjects.Init(UpdateToolStripItems, AssignEditorItem, toolStripItemNew_Click, toolStripItemCopy_Click, toolStripItemUndo_Click, toolStripItemPaste_Click, toolStripItemDelete_Click);
+        InitializeHairs();
+    }
+
+    private void InitializeHairs()
+    {
+        var originalSpriteHeight = grpSprite.Height;
+        grpHairs = new DarkUI.Controls.DarkGroupBox();
+        lstHairs = new System.Windows.Forms.ListBox();
+        btnAddHair = new DarkUI.Controls.DarkButton();
+        btnRemoveHair = new DarkUI.Controls.DarkButton();
+        cmbHair = new DarkUI.Controls.DarkComboBox();
+        lblHair = new System.Windows.Forms.Label();
+
+        grpHairs.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
+        grpHairs.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+        grpHairs.Controls.Add(btnRemoveHair);
+        grpHairs.Controls.Add(btnAddHair);
+        grpHairs.Controls.Add(lstHairs);
+        grpHairs.Controls.Add(cmbHair);
+        grpHairs.Controls.Add(lblHair);
+        grpHairs.ForeColor = System.Drawing.Color.Gainsboro;
+        grpHairs.Location = new System.Drawing.Point(6, 160);
+        grpHairs.Name = "grpHairs";
+        grpHairs.Size = new System.Drawing.Size(470, 150);
+        grpHairs.TabIndex = 33;
+        grpHairs.Text = "Available Hairs";
+
+        lstHairs.BackColor = System.Drawing.Color.FromArgb(60, 63, 65);
+        lstHairs.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+        lstHairs.ForeColor = System.Drawing.Color.Gainsboro;
+        lstHairs.Location = new System.Drawing.Point(7, 17);
+        lstHairs.Size = new System.Drawing.Size(200, 119);
+
+        lblHair.AutoSize = true;
+        lblHair.Location = new System.Drawing.Point(214, 17);
+        lblHair.Name = "lblHair";
+        lblHair.Text = "Hair:";
+
+        cmbHair.BackColor = System.Drawing.Color.FromArgb(69, 73, 74);
+        cmbHair.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+        cmbHair.BorderStyle = System.Windows.Forms.ButtonBorderStyle.Solid;
+        cmbHair.ButtonColor = System.Drawing.Color.FromArgb(43, 43, 43);
+        cmbHair.DrawDropdownHoverOutline = false;
+        cmbHair.DrawFocusRectangle = false;
+        cmbHair.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+        cmbHair.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+        cmbHair.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+        cmbHair.ForeColor = System.Drawing.Color.Gainsboro;
+        cmbHair.Location = new System.Drawing.Point(217, 33);
+        cmbHair.Name = "cmbHair";
+        cmbHair.Size = new System.Drawing.Size(245, 21);
+
+        btnAddHair.Location = new System.Drawing.Point(217, 89);
+        btnAddHair.Size = new System.Drawing.Size(245, 21);
+        btnAddHair.Text = "Add Hair";
+        btnAddHair.Click += btnAddHair_Click;
+
+        btnRemoveHair.Location = new System.Drawing.Point(217, 114);
+        btnRemoveHair.Size = new System.Drawing.Size(245, 21);
+        btnRemoveHair.Text = "Remove Hair";
+        btnRemoveHair.Click += btnRemoveHair_Click;
+
+        grpSprite.Controls.Add(grpHairs);
+        grpSprite.Height = grpHairs.Bottom + 8;
+        var verticalDelta = grpSprite.Height - originalSpriteHeight;
+        foreach (Control control in pnlContainer.Controls)
+        {
+            if (control != grpSprite && control.Top >= grpSprite.Bottom - verticalDelta)
+            {
+                control.Top += verticalDelta;
+            }
+        }
+
+        grpHairs.BringToFront();
+        grpSprite.Controls.SetChildIndex(grpHairs, 0);
     }
     private void AssignEditorItem(Guid id)
     {
@@ -224,6 +299,9 @@ public partial class FrmClass : EditorForm
                 cmbSprite.SelectedIndex = cmbSprite.FindString(
                     TextUtils.NullToNone(mEditorItem.Sprites[lstSprites.SelectedIndex].Sprite)
                 );
+                cmbFace.SelectedIndex = cmbFace.FindString(
+                    TextUtils.NullToNone(mEditorItem.Sprites[lstSprites.SelectedIndex].Face)
+                );
 
                 if (mEditorItem.Sprites[lstSprites.SelectedIndex].Gender == 0)
                 {
@@ -262,6 +340,7 @@ public partial class FrmClass : EditorForm
             cmbDirection.SelectedIndex = mEditorItem.SpawnDir;
 
             UpdateSpawnItemValues();
+            UpdateHairList();
             DrawSprite();
             if (mChanged.IndexOf(mEditorItem) == -1)
             {
@@ -299,11 +378,13 @@ public partial class FrmClass : EditorForm
         cmbAttackAnimation.Items.Clear();
         cmbAttackAnimation.Items.Add(Strings.General.None);
         cmbAttackAnimation.Items.AddRange(AnimationDescriptor.Names);
-        cmbAttackSprite.Items.Clear();
-        cmbAttackSprite.Items.Add(Strings.General.None);
         cmbAttackSprite.Items.AddRange(
             GameContentManager.GetOverridesFor(GameContentManager.TextureType.Entity, "attack").ToArray()
         );
+
+        cmbHair.Items.Clear();
+        cmbHair.Items.Add(Strings.General.None);
+        cmbHair.Items.AddRange(GameContentManager.GetSmartSortedTextureNames(GameContentManager.TextureType.Hair));
         cmbScalingStat.Items.Clear();
         for (var x = 0; x < ((int)Stat.Speed) + 1; x++)
         {
@@ -348,7 +429,7 @@ public partial class FrmClass : EditorForm
 
         btnVisualMapSelector.Text = Strings.Warping.visual;
 
-        grpSprite.Text = Strings.ClassEditor.spriteface;
+        grpSprite.Text = $"{Strings.ClassEditor.spriteface} / Hair";
         grpSpriteOptions.Text = Strings.ClassEditor.spriteoptions;
         btnAdd.Text = Strings.ClassEditor.addsprite;
         btnRemove.Text = Strings.ClassEditor.removeicon;
@@ -357,6 +438,7 @@ public partial class FrmClass : EditorForm
         rbFemale.Text = Strings.ClassEditor.female;
         lblSprite.Text = Strings.ClassEditor.sprite;
         lblFace.Text = Strings.ClassEditor.face;
+        lblHair.Text = "Hair:";
 
         grpSpawnItems.Text = Strings.ClassEditor.spawnitems;
         lblSpawnItem.Text = Strings.ClassEditor.spawnitem;
@@ -644,6 +726,41 @@ public partial class FrmClass : EditorForm
         {
             lstSprites.SelectedIndex = 0;
         }
+    }
+
+    private void UpdateHairList()
+    {
+        lstHairs.Items.Clear();
+        foreach (var hair in mEditorItem.Hairs)
+        {
+            lstHairs.Items.Add(hair);
+        }
+    }
+
+    private void btnAddHair_Click(object sender, EventArgs e)
+    {
+        if (cmbHair.SelectedIndex <= 0)
+        {
+            return;
+        }
+
+        var hair = cmbHair.Text;
+        if (!mEditorItem.Hairs.Contains(hair))
+        {
+            mEditorItem.Hairs.Add(hair);
+            UpdateHairList();
+        }
+    }
+
+    private void btnRemoveHair_Click(object sender, EventArgs e)
+    {
+        if (lstHairs.SelectedIndex == -1)
+        {
+            return;
+        }
+
+        mEditorItem.Hairs.RemoveAt(lstHairs.SelectedIndex);
+        UpdateHairList();
     }
 
     private void DrawSprite()

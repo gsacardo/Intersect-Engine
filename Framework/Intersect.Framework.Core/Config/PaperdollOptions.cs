@@ -1,4 +1,4 @@
-﻿using System.Runtime.Serialization;
+using System.Runtime.Serialization;
 using Intersect.Framework.Annotations;
 using Newtonsoft.Json;
 
@@ -13,6 +13,7 @@ public partial class PaperdollOptions
     public List<string> Down { get; set; } =
     [
         "Player",
+        "Hair",
         "Armor",
         "Helmet",
         "Weapon",
@@ -23,6 +24,7 @@ public partial class PaperdollOptions
     public List<string> Left { get; set; } =
     [
         "Player",
+        "Hair",
         "Armor",
         "Helmet",
         "Weapon",
@@ -33,6 +35,7 @@ public partial class PaperdollOptions
     public List<string> Right { get; set; } =
     [
         "Player",
+        "Hair",
         "Armor",
         "Helmet",
         "Weapon",
@@ -43,6 +46,7 @@ public partial class PaperdollOptions
     public List<string> Up { get; set; } =
     [
         "Player",
+        "Hair",
         "Armor",
         "Helmet",
         "Weapon",
@@ -52,6 +56,10 @@ public partial class PaperdollOptions
 
     public PaperdollOptions()
     {
+        EnsureHairLayer(Up);
+        EnsureHairLayer(Down);
+        EnsureHairLayer(Left);
+        EnsureHairLayer(Right);
         Directions =
         [
             Up,
@@ -73,10 +81,10 @@ public partial class PaperdollOptions
     [OnDeserialized]
     internal void OnDeserializedMethod(StreamingContext context)
     {
-        Up = [..Up.Distinct()];
-        Down = [..Down.Distinct()];
-        Left = [..Left.Distinct()];
-        Right = [..Right.Distinct()];
+        Up = NormalizeDirection(Up);
+        Down = NormalizeDirection(Down);
+        Left = NormalizeDirection(Left);
+        Right = NormalizeDirection(Right);
         Directions =
         [
             Up,
@@ -98,7 +106,7 @@ public partial class PaperdollOptions
                     hasPlayer = true;
                 }
 
-                if (!equipment.Slots.Contains(item) && item != "Player")
+                if (!equipment.Slots.Contains(item) && item != "Player" && item != "Hair")
                 {
                     throw new Exception($"Config Error: Paperdoll item {item} does not exist in equipment slots!");
                 }
@@ -109,5 +117,32 @@ public partial class PaperdollOptions
                 throw new Exception($"Config Error: Paperdoll direction {direction} does not have Player listed!");
             }
         }
+    }
+
+    private static List<string> NormalizeDirection(List<string> direction)
+    {
+        direction ??= [];
+        var normalized = direction.Distinct().ToList();
+        EnsureHairLayer(normalized);
+        return normalized;
+    }
+
+    private static void EnsureHairLayer(List<string> direction)
+    {
+        if (direction == null)
+        {
+            return;
+        }
+
+        direction.RemoveAll(item => item == "Hair");
+
+        var playerIndex = direction.IndexOf("Player");
+        if (playerIndex < 0)
+        {
+            direction.Insert(0, "Hair");
+            return;
+        }
+
+        direction.Insert(playerIndex + 1, "Hair");
     }
 }

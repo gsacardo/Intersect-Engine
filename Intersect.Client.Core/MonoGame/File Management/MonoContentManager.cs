@@ -194,6 +194,11 @@ public partial class MonoContentManager : GameContentManager
         LoadTextureGroup("paperdolls", mPaperdollDict);
     }
 
+    public override void LoadHairs()
+    {
+        LoadTextureGroup("hairs", mHairDict);
+    }
+
     public override void LoadGui()
     {
         LoadTextureGroup("gui", mGuiDict);

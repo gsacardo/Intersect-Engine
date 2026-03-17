@@ -8,5 +8,7 @@ public partial class ClassSprite
 
     public Gender Gender { get; set; }
 
+    public string Hair { get; set; } = string.Empty;
+
     public string Sprite { get; set; } = string.Empty;
 }

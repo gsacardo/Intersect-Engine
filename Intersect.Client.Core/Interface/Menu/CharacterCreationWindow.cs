@@ -1,4 +1,6 @@
+using System.IO;
 using Intersect.Client.Core;
+using Intersect.Client.Framework.Entities;
 using Intersect.Client.Framework.Content;
 using Intersect.Client.Framework.File_Management;
 using Intersect.Client.Framework.Graphics;
@@ -36,7 +38,7 @@ public partial class CharacterCreationWindow : Window
     private readonly TextBox _nameInput;
 
     private readonly LabeledComboBox _classCombobox;
-
+    private readonly LabeledComboBox _hairCombobox;
     private readonly Panel _genderInputPanel;
     private readonly LabeledCheckBox _genderMaleCheckbox;
     private readonly LabeledCheckBox _genderFemaleCheckbox;
@@ -45,11 +47,15 @@ public partial class CharacterCreationWindow : Window
     private ImagePanel[]? _renderLayers;
     private readonly Button _nextSpriteButton;
     private readonly Button _prevSpriteButton;
+    private readonly Button _nextHairButton;
+    private readonly Button _prevHairButton;
 
     // Buttons
     private readonly Button _createButton;
 
     private int _displaySpriteIndex = -1;
+    private int _selectedHairIndex = -1;
+    private readonly List<string> _availableHairs = [];
     private readonly List<KeyValuePair<int, ClassSprite>> _femaleSprites = [];
     private readonly List<KeyValuePair<int, ClassSprite>> _maleSprites = [];
     private Button _backButton;
@@ -133,6 +139,18 @@ public partial class CharacterCreationWindow : Window
         };
         _classCombobox.ItemSelected += classCombobox_ItemSelected;
 
+        _hairCombobox = new LabeledComboBox(_propertiesPanel, name: nameof(_hairCombobox))
+        {
+            AutoSizeToContents = false,
+            Dock = Pos.Top,
+            Font = _defaultFont,
+            FontSize = 12,
+            Label = Strings.CharacterCreation.Hair,
+            IsHidden = true,
+        };
+
+        _hairCombobox.ItemSelected += (сontrol, args) => UpdateDisplay();
+
         _genderInputPanel = new Panel(_propertiesPanel, name: nameof(_genderInputPanel))
         {
             Dock = Pos.Top,
@@ -169,11 +187,10 @@ public partial class CharacterCreationWindow : Window
             ShouldDrawBackground = false,
         };
 
-        _prevSpriteButton = new Button(_previewPanel, name: nameof(_prevSpriteButton), disableText: true)
+        _prevSpriteButton = new Button(_previewContainer, name: nameof(_prevSpriteButton), disableText: true)
         {
-            Dock = Pos.Left | Pos.CenterV,
-            MinimumSize = new Point(30, 35),
-            MaximumSize = new Point(30, 35),
+            MinimumSize = new Point(24, 28),
+            MaximumSize = new Point(24, 28),
         };
         _prevSpriteButton.Clicked += _prevSpriteButton_Clicked;
         _prevSpriteButton.SetStateTexture(ComponentState.Normal, "button.arrow_left.normal.png");
@@ -181,11 +198,10 @@ public partial class CharacterCreationWindow : Window
         _prevSpriteButton.SetStateTexture(ComponentState.Hovered, "button.arrow_left.hovered.png");
         _prevSpriteButton.SetStateTexture(ComponentState.Active, "button.arrow_left.active.png");
 
-        _nextSpriteButton = new Button(_previewPanel, name: nameof(_nextSpriteButton), disableText: true)
+        _nextSpriteButton = new Button(_previewContainer, name: nameof(_nextSpriteButton), disableText: true)
         {
-            Dock = Pos.Right | Pos.CenterV,
-            MinimumSize = new Point(30, 35),
-            MaximumSize = new Point(30, 35),
+            MinimumSize = new Point(24, 28),
+            MaximumSize = new Point(24, 28),
         };
         _nextSpriteButton.Clicked += _nextSpriteButton_Clicked;
         _nextSpriteButton.SetStateTexture(ComponentState.Normal, "button.arrow_right.normal.png");
@@ -200,6 +216,28 @@ public partial class CharacterCreationWindow : Window
             TextureFilename = "character_preview_background.png",
         };
 
+        _prevHairButton = new Button(_previewContainer, name: nameof(_prevHairButton), disableText: true)
+        {
+            MinimumSize = new Point(24, 28),
+            MaximumSize = new Point(24, 28),
+        };
+        _prevHairButton.Clicked += PrevHairButton_Clicked;
+        _prevHairButton.SetStateTexture(ComponentState.Normal, "button.arrow_left.normal.png");
+        _prevHairButton.SetStateTexture(ComponentState.Disabled, "button.arrow_left.disabled.png");
+        _prevHairButton.SetStateTexture(ComponentState.Hovered, "button.arrow_left.hovered.png");
+        _prevHairButton.SetStateTexture(ComponentState.Active, "button.arrow_left.active.png");
+
+        _nextHairButton = new Button(_previewContainer, name: nameof(_nextHairButton), disableText: true)
+        {
+            MinimumSize = new Point(24, 28),
+            MaximumSize = new Point(24, 28),
+        };
+        _nextHairButton.Clicked += NextHairButton_Clicked;
+        _nextHairButton.SetStateTexture(ComponentState.Normal, "button.arrow_right.normal.png");
+        _nextHairButton.SetStateTexture(ComponentState.Disabled, "button.arrow_right.disabled.png");
+        _nextHairButton.SetStateTexture(ComponentState.Hovered, "button.arrow_right.hovered.png");
+        _nextHairButton.SetStateTexture(ComponentState.Active, "button.arrow_right.active.png");
+
         _buttonsPanel.SizeToChildren(recursive: true);
         _propertiesPanel.SizeToChildren(recursive: true);
     }
@@ -209,6 +247,10 @@ public partial class CharacterCreationWindow : Window
         SizeToChildren(recursive: true);
 
         LoadJsonUi(GameContentManager.UI.Menu, Graphics.Renderer?.GetResolutionString());
+        _hairCombobox.IsHidden = true;
+        _hairCombobox.Dock = Pos.None;
+        _hairCombobox.SetBounds(0, 0, 0, 0);
+        _hairCombobox.Disable();
 
         _classCombobox.ClearItems();
 
@@ -253,6 +295,8 @@ public partial class CharacterCreationWindow : Window
     {
         _backButton.IsVisibleInTree = true;
         _createButton.Alignment = force ? [Alignments.Center] : [Alignments.Left];
+        _hairCombobox.IsHidden = true;
+        _hairCombobox.SetBounds(0, 0, 0, 0);
 
         _renderLayers = new ImagePanel[Options.Instance.Equipment.Paperdoll.Down.Count];
         for (var i = 0; i < _renderLayers.Length; i++)
@@ -263,6 +307,7 @@ public partial class CharacterCreationWindow : Window
             };
         }
 
+        UpdateNavigationButtons();
         base.Show();
     }
 
@@ -277,13 +322,15 @@ public partial class CharacterCreationWindow : Window
             {
                 renderLayer.IsVisibleInTree = false;
             }
+
+            UpdateNavigationButtons();
             return;
         }
 
         var source = _genderMaleCheckbox.IsChecked ? _maleSprites[_displaySpriteIndex] : _femaleSprites[_displaySpriteIndex];
 
         var faceTexture = GameContentManager.Current.GetTexture(TextureType.Face, source.Value.Face);
-        if (faceTexture != default)
+        if (faceTexture != default && string.IsNullOrEmpty(GetSelectedHair()))
         {
             var faceLayer = _renderLayers[0];
             var faceScale = Math.Min(
@@ -319,6 +366,18 @@ public partial class CharacterCreationWindow : Window
                 var spriteSource = source.Value.Sprite;
                 var spriteTex = Globals.ContentManager.GetTexture(TextureType.Entity, spriteSource);
                 paperdollContainer.Texture = spriteTex;
+            }
+            else if (string.Equals("Hair", paperdollLayerType, StringComparison.Ordinal))
+            {
+                var hairSource = GetSelectedHair();
+                if (!string.IsNullOrEmpty(hairSource) && !string.Equals(hairSource, Strings.General.None, StringComparison.Ordinal))
+                {
+                    paperdollContainer.Texture = ResolveHairTexture(hairSource);
+                }
+                else
+                {
+                    paperdollContainer.Texture = default;
+                }
             }
             else
             {
@@ -365,7 +424,10 @@ public partial class CharacterCreationWindow : Window
             paperdollContainer.SetPosition(centerX, centerY);
 
             paperdollContainer.Show();
+            paperdollContainer.BringToFront();
         }
+
+        UpdateNavigationButtons();
     }
 
     private ClassDescriptor? GetClass()
@@ -387,7 +449,9 @@ public partial class CharacterCreationWindow : Window
         var cls = GetClass();
         _maleSprites.Clear();
         _femaleSprites.Clear();
+        _availableHairs.Clear();
         _displaySpriteIndex = -1;
+        _selectedHairIndex = -1;
         if (cls != null)
         {
             for (var i = 0; i < cls.Sprites.Count; i++)
@@ -401,9 +465,33 @@ public partial class CharacterCreationWindow : Window
                     _femaleSprites.Add(new KeyValuePair<int, ClassSprite>(i, cls.Sprites[i]));
                 }
             }
+
+            _hairCombobox.ClearItems();
+            _ = _hairCombobox.AddItem(Strings.General.None);
+            foreach (var hair in cls.Hairs
+                         .Where(hair => !string.IsNullOrWhiteSpace(hair))
+                         .Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                _availableHairs.Add(hair);
+                _ = _hairCombobox.AddItem(hair);
+            }
+            ResetHair();
         }
 
         ResetSprite();
+        UpdateNavigationButtons();
+    }
+
+    private IGameTexture? ResolveHairTexture(string hairSource)
+    {
+        var hairTexture = Globals.ContentManager.GetTexture(TextureType.Hair, hairSource);
+        if (hairTexture != default)
+        {
+            return hairTexture;
+        }
+
+        var filenameWithoutExtension = Path.GetFileNameWithoutExtension(hairSource);
+        return Globals.ContentManager.GetTexture(TextureType.Hair, $"{filenameWithoutExtension}_{SpriteAnimations.Normal}.png");
     }
 
     private void ResetSprite()
@@ -443,6 +531,86 @@ public partial class CharacterCreationWindow : Window
                 _displaySpriteIndex = -1;
             }
         }
+    }
+
+    private string GetSelectedHair()
+    {
+        if (_selectedHairIndex < 0 || _selectedHairIndex >= _availableHairs.Count)
+        {
+            return string.Empty;
+        }
+
+        return _availableHairs[_selectedHairIndex];
+    }
+
+    private void UpdateNavigationButtons()
+    {
+        var hasMultipleHairs = _availableHairs.Count > 1;
+        _prevHairButton.IsHidden = !hasMultipleHairs;
+        _nextHairButton.IsHidden = !hasMultipleHairs;
+
+        if (_previewContainer.Width <= 0 || _previewContainer.Height <= 0)
+        {
+            return;
+        }
+
+        var previewLeft = _preview.X;
+        var previewTop = _preview.Y;
+        var previewRight = _preview.X + _preview.Width;
+        var previewWidth = _preview.Width;
+        var previewHeight = _preview.Height;
+        var previewCenterX = previewLeft + previewWidth / 2;
+
+        var topButtonY = Math.Max(0, previewTop - _prevHairButton.Height - 8);
+        var bottomButtonY = Math.Min(
+            _previewContainer.Height - _prevSpriteButton.Height,
+            previewTop + (int)(previewHeight * 0.62f)
+        );
+
+        var upperHorizontalOffset = Math.Max(18, previewWidth / 6);
+        var lowerHorizontalOffset = Math.Max(12, previewWidth / 8);
+
+        _prevHairButton.SetPosition(previewCenterX - upperHorizontalOffset - _prevHairButton.Width, topButtonY);
+        _nextHairButton.SetPosition(previewCenterX + upperHorizontalOffset, topButtonY);
+        _prevSpriteButton.SetPosition(Math.Max(0, previewLeft - _prevSpriteButton.Width - lowerHorizontalOffset), bottomButtonY);
+        _nextSpriteButton.SetPosition(
+            Math.Min(_previewContainer.Width - _nextSpriteButton.Width, previewRight + lowerHorizontalOffset),
+            bottomButtonY
+        );
+
+        _prevHairButton.BringToFront();
+        _nextHairButton.BringToFront();
+        _prevSpriteButton.BringToFront();
+        _nextSpriteButton.BringToFront();
+    }
+
+    private void SelectHairOffset(int offset)
+    {
+        if (_availableHairs.Count <= 1)
+        {
+            return;
+        }
+
+        if (_selectedHairIndex < 0)
+        {
+            _selectedHairIndex = 0;
+        }
+
+        _selectedHairIndex += offset;
+        if (_selectedHairIndex < 0)
+        {
+            _selectedHairIndex = _availableHairs.Count - 1;
+        }
+        else if (_selectedHairIndex >= _availableHairs.Count)
+        {
+            _selectedHairIndex = 0;
+        }
+        UpdateDisplay();
+    }
+
+    private void ResetHair()
+    {
+        _selectedHairIndex = _availableHairs.Count > 0 ? 0 : -1;
     }
 
     private void _prevSpriteButton_Clicked(Base sender, MouseButtonState arguments)
@@ -531,8 +699,9 @@ public partial class CharacterCreationWindow : Window
 
         var charName = _nameInput.Text;
         var spriteKey = _genderMaleCheckbox.IsChecked ? _maleSprites[_displaySpriteIndex].Key : _femaleSprites[_displaySpriteIndex].Key;
+        var hair = GetSelectedHair();
 
-        PacketSender.SendCreateCharacter(charName, cls.Id, spriteKey);
+        PacketSender.SendCreateCharacter(charName, cls.Id, spriteKey, hair ?? string.Empty);
         Globals.WaitingOnServer = true;
         _createButton.Disable();
         ChatboxMsg.ClearMessages();
@@ -569,6 +738,16 @@ public partial class CharacterCreationWindow : Window
         }
 
         TryCreateCharacter();
+    }
+
+    private void PrevHairButton_Clicked(Base sender, MouseButtonState arguments)
+    {
+        SelectHairOffset(-1);
+    }
+
+    private void NextHairButton_Clicked(Base sender, MouseButtonState arguments)
+    {
+        SelectHairOffset(1);
     }
 
     private void BackButton_Clicked(Base sender, MouseButtonState arguments)

@@ -709,6 +709,9 @@ public static partial class Strings
         public static LocalizedString Name = @"Name";
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public static LocalizedString Hair = @"Hair";
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public static LocalizedString Title = @"Create a New Character";
     }
 

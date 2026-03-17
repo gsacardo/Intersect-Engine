@@ -2434,6 +2434,12 @@ namespace Intersect.Editor.Forms.Editors
         private System.Windows.Forms.Label lblMagicResistIncrease;
         private System.Windows.Forms.Label lblArmorIncrease;
         private System.Windows.Forms.Label lblMagicIncrease;
+        private DarkUI.Controls.DarkGroupBox grpHairs;
+        private DarkUI.Controls.DarkButton btnRemoveHair;
+        private DarkUI.Controls.DarkButton btnAddHair;
+        private System.Windows.Forms.ListBox lstHairs;
+        private DarkUI.Controls.DarkComboBox cmbHair;
+        private System.Windows.Forms.Label lblHair;
         private DarkToolStrip toolStrip;
         private System.Windows.Forms.ToolStripButton toolStripItemNew;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;

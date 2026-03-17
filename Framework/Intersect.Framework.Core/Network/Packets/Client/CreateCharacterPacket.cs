@@ -1,4 +1,4 @@
-﻿using Intersect.Collections;
+using Intersect.Collections;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.GameObjects;
 using MessagePack;
@@ -13,11 +13,12 @@ public partial class CreateCharacterPacket : IntersectPacket
     {
     }
 
-    public CreateCharacterPacket(string name, Guid classId, int sprite)
+    public CreateCharacterPacket(string name, Guid classId, int sprite, string hair)
     {
         Name = name;
         ClassId = classId;
         Sprite = sprite;
+        Hair = hair;
     }
 
     [Key(0)]
@@ -29,6 +30,9 @@ public partial class CreateCharacterPacket : IntersectPacket
     [Key(2)]
     public int Sprite { get; set; }
 
+    [Key(3)]
+    public string Hair { get; set; }
+
     public override Dictionary<string, SanitizedValue<object>> Sanitize()
     {
         base.Sanitize();
@@ -38,7 +42,12 @@ public partial class CreateCharacterPacket : IntersectPacket
         var classDescriptor = ClassDescriptor.Get(ClassId);
         if (classDescriptor != null)
         {
-            Sprite = sanitizer.Clamp(nameof(Sprite), Sprite, 0, classDescriptor.Sprites?.Count ?? 0);
+            var maxSpriteIndex = Math.Max(0, (classDescriptor.Sprites?.Count ?? 1) - 1);
+            Sprite = sanitizer.Clamp(nameof(Sprite), Sprite, 0, maxSpriteIndex);
+            if (!string.IsNullOrEmpty(Hair) && !(classDescriptor.Hairs?.Contains(Hair) ?? false))
+            {
+                Hair = string.Empty;
+            }
         }
 
         return sanitizer.Sanitized;

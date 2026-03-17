@@ -49,6 +49,8 @@ public abstract partial class GameContentManager : IContentManager
 
     protected readonly Dictionary<string, IAsset> mMiscDict = [];
 
+    protected readonly Dictionary<string, IAsset> mHairDict = [];
+
     protected readonly Dictionary<string, IAsset> mMusicDict = [];
 
     protected readonly Dictionary<string, IAsset> mPaperdollDict = [];
@@ -81,6 +83,7 @@ public abstract partial class GameContentManager : IContentManager
         { ContentType.Interface, mGuiDict.Values },
         { ContentType.Item, mItemDict.Values },
         { ContentType.Miscellaneous, mMiscDict.Values },
+        { ContentType.Hair, mHairDict.Values },
         { ContentType.Paperdoll, mPaperdollDict.Values },
         { ContentType.Resource, mResourceDict.Values },
         { ContentType.Spell, mSpellDict.Values },
@@ -119,6 +122,7 @@ public abstract partial class GameContentManager : IContentManager
         LoadFogs();
         LoadResources();
         LoadPaperdolls();
+        LoadHairs();
         LoadMisc();
         LoadGui();
         LoadFonts();
@@ -146,6 +150,8 @@ public abstract partial class GameContentManager : IContentManager
     public abstract void LoadResources();
 
     public abstract void LoadPaperdolls();
+
+    public abstract void LoadHairs();
 
     public abstract void LoadGui();
 
@@ -218,6 +224,9 @@ public abstract partial class GameContentManager : IContentManager
 
             case TextureType.Misc:
                 return mMiscDict.Keys.ToArray();
+
+            case TextureType.Hair:
+                return mHairDict.Keys.ToArray();
         }
 
         return null;
@@ -297,6 +306,11 @@ public abstract partial class GameContentManager : IContentManager
 
             case TextureType.Misc:
                 textureDict = mMiscDict;
+
+                break;
+
+            case TextureType.Hair:
+                textureDict = mHairDict;
 
                 break;
 
@@ -560,6 +574,9 @@ public abstract partial class GameContentManager : IContentManager
 
             case ContentType.Miscellaneous:
                 return mMiscDict;
+
+            case ContentType.Hair:
+                return mHairDict;
 
             case ContentType.Paperdoll:
                 return mPaperdollDict;
