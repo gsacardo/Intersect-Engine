@@ -1044,6 +1044,27 @@ public partial class Player : Entity
         }
     }
 
+    protected override bool ShouldHideHair()
+    {
+        var helmetSlot = Options.Instance.Equipment.Slots.IndexOf("Helmet");
+        if (helmetSlot < 0)
+            return false;
+
+        var helmetIndex = Equipment[helmetSlot];
+        if (helmetIndex < 0 || helmetIndex >= Items.Count)
+            return false;
+
+        var item = Items[helmetIndex];
+        if (item == null || item.ItemId == Guid.Empty)
+            return false;
+
+        var descriptor = ItemDescriptor.Get(item.ItemId);
+        if (descriptor == null)
+            return false;
+
+        return descriptor.HideHair;
+    }
+
     //Sending Data
     public override EntityPacket EntityPacket(EntityPacket packet = null, Player forPlayer = null)
     {
@@ -6032,6 +6053,7 @@ public partial class Player : Entity
 
         if (sendPackets)
         {
+            PacketSender.SendEntityDataToProximity(this);
             PacketSender.SendPlayerEquipmentToProximity(this);
             PacketSender.SendEntityStats(this);
         }

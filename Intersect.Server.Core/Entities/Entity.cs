@@ -3256,6 +3256,7 @@ public abstract partial class Entity : IEntity
         packet.NameColor = NameColor;
         packet.HeaderLabel = new LabelPacket(HeaderLabel.Text, HeaderLabel.Color);
         packet.FooterLabel = new LabelPacket(FooterLabel.Text, FooterLabel.Color);
+        packet.HideHair = ShouldHideHair();
 
         return packet;
     }
@@ -3284,6 +3285,11 @@ public abstract partial class Entity : IEntity
         }
 
         return statusPackets;
+    }
+
+    protected virtual bool ShouldHideHair()
+    {
+        return false;
     }
 
     #region Spell Cooldowns

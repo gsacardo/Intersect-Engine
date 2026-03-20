@@ -23,6 +23,7 @@ using Intersect.Framework.Core.GameObjects.Maps;
 using Intersect.Framework.Core.GameObjects.Maps.Attributes;
 using Intersect.Framework.Core.GameObjects.PlayerClass;
 using Intersect.GameObjects;
+using Intersect.GameObjects;
 using Intersect.Network.Packets.Server;
 using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
@@ -110,6 +111,8 @@ public partial class Entity : IEntity
     public bool IsHidden { get; set; } = false;
 
     public bool HideName { get; set; }
+
+    public bool HideHair { get; set; }
 
     //Core Values
     public Guid Id { get; set; }
@@ -414,6 +417,7 @@ public partial class Entity : IEntity
         DirectionFacing = (Direction)packet.Dir;
         Passable = packet.Passable;
         HideName = packet.HideName;
+        HideHair = packet.HideHair;
         IsHidden = packet.HideEntity;
         NameColor = packet.NameColor;
         HeaderLabel = new Label(packet.HeaderLabel.Label, packet.HeaderLabel.Color);
@@ -1319,8 +1323,11 @@ public partial class Entity : IEntity
             }
             else if (string.Equals("Hair", paperdoll, StringComparison.Ordinal))
             {
-                var hairRenderColor = new Color(renderColor.A, HairColor.R, HairColor.G, HairColor.B);
-                DrawHair(hairRenderColor);
+                if (!HideHair)
+                {
+                    var hairRenderColor = new Color(renderColor.A, HairColor.R, HairColor.G, HairColor.B);
+                    DrawHair(hairRenderColor);
+                }
             }
             else if (equipSlot > -1)
             {

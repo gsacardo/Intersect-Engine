@@ -8,6 +8,8 @@ public partial class EquipmentOptions
 
     public int ShieldSlot { get; set; } = 3;
 
+    public int HelmetSlot { get; set; } = 0;
+
     public List<string> Slots { get; set; } =
     [
         "Helmet",

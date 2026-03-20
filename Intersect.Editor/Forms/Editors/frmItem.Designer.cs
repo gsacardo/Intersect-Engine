@@ -37,7 +37,7 @@ namespace Intersect.Editor.Forms.Editors
             grpItems = new DarkGroupBox();
             btnClearSearch = new DarkButton();
             txtSearch = new DarkTextBox();
-            lstGameObjects = new Controls.GameObjectList();
+            lstGameObjects = new Intersect.Editor.Forms.Controls.GameObjectList();
             btnCancel = new DarkButton();
             btnSave = new DarkButton();
             grpGeneral = new DarkGroupBox();
@@ -217,6 +217,8 @@ namespace Intersect.Editor.Forms.Editors
             lblBlockAmount = new Label();
             nudBlockChance = new DarkNumericUpDown();
             lblBlockChance = new Label();
+            grpHelmetProperties = new DarkGroupBox();
+            chkHideHair = new DarkCheckBox();
             pnlContainer = new Panel();
             toolStrip = new DarkToolStrip();
             toolStripItemNew = new ToolStripButton();
@@ -293,6 +295,7 @@ namespace Intersect.Editor.Forms.Editors
             ((ISupportInitialize)nudBlockDmgAbs).BeginInit();
             ((ISupportInitialize)nudBlockAmount).BeginInit();
             ((ISupportInitialize)nudBlockChance).BeginInit();
+            grpHelmetProperties.SuspendLayout();
             pnlContainer.SuspendLayout();
             toolStrip.SuspendLayout();
             SuspendLayout();
@@ -394,6 +397,7 @@ namespace Intersect.Editor.Forms.Editors
             grpGeneral.Controls.Add(chkCanGuildBank);
             grpGeneral.Controls.Add(lblEquipmentAnimation);
             grpGeneral.Controls.Add(nudDeathDropChance);
+            grpGeneral.Controls.Add(grpHelmetProperties);
             grpGeneral.Controls.Add(lblDeathDropChance);
             grpGeneral.Controls.Add(chkCanSell);
             grpGeneral.Controls.Add(chkCanTrade);
@@ -707,7 +711,7 @@ namespace Intersect.Editor.Forms.Editors
             lblDespawnTime.Location = new System.Drawing.Point(9, 479);
             lblDespawnTime.Margin = new Padding(4, 0, 4, 0);
             lblDespawnTime.Name = "lblDespawnTime";
-            lblDespawnTime.Size = new Size(262, 15);
+            lblDespawnTime.Size = new Size(263, 15);
             lblDespawnTime.TabIndex = 101;
             lblDespawnTime.Text = "Item Despawn Time (ms):     [0 for server default]";
             // 
@@ -844,7 +848,7 @@ namespace Intersect.Editor.Forms.Editors
             chkCanTrade.Location = new System.Drawing.Point(27, 384);
             chkCanTrade.Margin = new Padding(4, 3, 4, 3);
             chkCanTrade.Name = "chkCanTrade";
-            chkCanTrade.Size = new Size(83, 19);
+            chkCanTrade.Size = new Size(84, 19);
             chkCanTrade.TabIndex = 91;
             chkCanTrade.Text = "Can Trade?";
             chkCanTrade.CheckedChanged += chkCanTrade_CheckedChanged;
@@ -1177,7 +1181,7 @@ namespace Intersect.Editor.Forms.Editors
             lblType.Location = new System.Drawing.Point(9, 111);
             lblType.Margin = new Padding(4, 0, 4, 0);
             lblType.Name = "lblType";
-            lblType.Size = new Size(34, 15);
+            lblType.Size = new Size(35, 15);
             lblType.TabIndex = 3;
             lblType.Text = "Type:";
             // 
@@ -2430,7 +2434,7 @@ namespace Intersect.Editor.Forms.Editors
             lblCritMultiplier.Location = new System.Drawing.Point(14, 112);
             lblCritMultiplier.Margin = new Padding(4, 0, 4, 0);
             lblCritMultiplier.Name = "lblCritMultiplier";
-            lblCritMultiplier.Size = new Size(156, 15);
+            lblCritMultiplier.Size = new Size(155, 15);
             lblCritMultiplier.TabIndex = 57;
             lblCritMultiplier.Text = "Crit Multiplier (Default 1.5x):";
             // 
@@ -2638,7 +2642,7 @@ namespace Intersect.Editor.Forms.Editors
             lblDamageType.Location = new System.Drawing.Point(15, 156);
             lblDamageType.Margin = new Padding(4, 0, 4, 0);
             lblDamageType.Name = "lblDamageType";
-            lblDamageType.Size = new Size(81, 15);
+            lblDamageType.Size = new Size(82, 15);
             lblDamageType.TabIndex = 41;
             lblDamageType.Text = "Damage Type:";
             // 
@@ -2680,7 +2684,7 @@ namespace Intersect.Editor.Forms.Editors
             lblAttackAnimation.Location = new System.Drawing.Point(14, 387);
             lblAttackAnimation.Margin = new Padding(4, 0, 4, 0);
             lblAttackAnimation.Name = "lblAttackAnimation";
-            lblAttackAnimation.Size = new Size(132, 15);
+            lblAttackAnimation.Size = new Size(131, 15);
             lblAttackAnimation.TabIndex = 37;
             lblAttackAnimation.Text = "Extra Attack Animation:";
             // 
@@ -2701,7 +2705,7 @@ namespace Intersect.Editor.Forms.Editors
             lblToolType.Location = new System.Drawing.Point(15, 435);
             lblToolType.Margin = new Padding(4, 0, 4, 0);
             lblToolType.Name = "lblToolType";
-            lblToolType.Size = new Size(59, 15);
+            lblToolType.Size = new Size(61, 15);
             lblToolType.TabIndex = 26;
             lblToolType.Text = "Tool Type:";
             // 
@@ -2834,6 +2838,34 @@ namespace Intersect.Editor.Forms.Editors
             lblBlockChance.TabIndex = 59;
             lblBlockChance.Text = "Block Chance (%):";
             // 
+            // grpHelmetProperties
+            // 
+            grpHelmetProperties.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
+            grpHelmetProperties.BorderColor = System.Drawing.Color.FromArgb(90, 90, 90);
+            grpHelmetProperties.Controls.Add(chkHideHair);
+            grpHelmetProperties.ForeColor = System.Drawing.Color.Gainsboro;
+            grpHelmetProperties.Location = new System.Drawing.Point(321, 479);
+            grpHelmetProperties.Margin = new Padding(4, 3, 4, 3);
+            grpHelmetProperties.Name = "grpHelmetProperties";
+            grpHelmetProperties.Padding = new Padding(4, 3, 4, 3);
+            grpHelmetProperties.Size = new Size(253, 45);
+            grpHelmetProperties.TabIndex = 51;
+            grpHelmetProperties.TabStop = false;
+            grpHelmetProperties.Text = "Helmet Properties";
+            // 
+            // chkHideHair
+            // 
+            chkHideHair.AutoSize = true;
+            chkHideHair.BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
+            chkHideHair.ForeColor = System.Drawing.Color.Gainsboro;
+            chkHideHair.Location = new System.Drawing.Point(9, 20);
+            chkHideHair.Margin = new Padding(4, 3, 4, 3);
+            chkHideHair.Name = "chkHideHair";
+            chkHideHair.Size = new Size(76, 19);
+            chkHideHair.TabIndex = 50;
+            chkHideHair.Text = "Hide Hair";
+            chkHideHair.CheckedChanged += chkHideHair_CheckedChanged;
+            // 
             // pnlContainer
             // 
             pnlContainer.AutoScroll = true;
@@ -2964,7 +2996,6 @@ namespace Intersect.Editor.Forms.Editors
             AutoSize = true;
             BackColor = System.Drawing.Color.FromArgb(45, 45, 48);
             ClientSize = new Size(1241, 728);
-            ControlBox = true;
             Controls.Add(toolStrip);
             Controls.Add(btnCancel);
             Controls.Add(btnSave);
@@ -2973,8 +3004,8 @@ namespace Intersect.Editor.Forms.Editors
             FormBorderStyle = FormBorderStyle.FixedSingle;
             KeyPreview = true;
             Margin = new Padding(4, 3, 4, 3);
-            MinimizeBox = false;
             MaximizeBox = false;
+            MinimizeBox = false;
             Name = "FrmItem";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Item Editor";
@@ -3064,6 +3095,8 @@ namespace Intersect.Editor.Forms.Editors
             ((ISupportInitialize)nudBlockDmgAbs).EndInit();
             ((ISupportInitialize)nudBlockAmount).EndInit();
             ((ISupportInitialize)nudBlockChance).EndInit();
+            grpHelmetProperties.ResumeLayout(false);
+            grpHelmetProperties.PerformLayout();
             pnlContainer.ResumeLayout(false);
             toolStrip.ResumeLayout(false);
             toolStrip.PerformLayout();
@@ -3102,6 +3135,7 @@ namespace Intersect.Editor.Forms.Editors
         private Label lblAttackAnimation;
         private DarkGroupBox grpStatBonuses;
         private DarkGroupBox grpWeaponProperties;
+        private DarkGroupBox grpHelmetProperties;
         private Label lblScalingAmount;
         private Label lblDamageType;
         private Label lblCritChance;
@@ -3121,6 +3155,7 @@ namespace Intersect.Editor.Forms.Editors
         private DarkTextBox txtDesc;
         private DarkCheckBox chk2Hand;
         private DarkComboBox cmbEquipmentSlot;
+        private DarkCheckBox chkHideHair;
         private DarkComboBox cmbToolType;
         private DarkGroupBox grpEvent;
         private DarkComboBox cmbFemalePaperdoll;

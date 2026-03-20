@@ -95,11 +95,6 @@ public abstract partial class GameContext : IntersectDbContext<GameContext>, IGa
 
     public override void OnSchemaMigrationsProcessed(string[] migrations)
     {
-        if (migrations.IndexOf("20190611170819_CombiningSwitchesVariables") > -1)
-        {
-            Beta6Migration.Run(this);
-        }
-
         if (migrations.IndexOf("20201004032158_EnablingCerasVersionTolerance") > -1)
         {
             CerasVersionToleranceMigration.Run(this);
@@ -116,6 +111,30 @@ public abstract partial class GameContext : IntersectDbContext<GameContext>, IGa
         }
 
         EnsureClassHairColumns();
+        EnsureItemHideHairColumn();
+    }
+
+    private void EnsureItemHideHairColumn()
+    {
+        var databaseType = DatabaseType;
+        if (ColumnExists("Items", "HideHair"))
+        {
+            return;
+        }
+
+        ApplicationContext.Context.Value?.Logger.LogInformation(
+            "Applying schema compatibility patch for Items.HideHair on {DatabaseType}.",
+            databaseType
+        );
+
+        ExecuteNonQuery(
+            databaseType switch
+            {
+                Intersect.Config.DatabaseType.Sqlite => "ALTER TABLE \"Items\" ADD COLUMN \"HideHair\" INTEGER NOT NULL DEFAULT 0;",
+                Intersect.Config.DatabaseType.MySql => "ALTER TABLE `Items` ADD COLUMN `HideHair` tinyint(1) NOT NULL DEFAULT 0;",
+                _ => throw new DatabaseTypeInvalidException(databaseType),
+            }
+        );
     }
 
     private void EnsureClassHairColumns()

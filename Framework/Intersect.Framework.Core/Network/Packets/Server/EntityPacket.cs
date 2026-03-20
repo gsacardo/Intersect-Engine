@@ -84,4 +84,7 @@ public abstract partial class EntityPacket : IntersectPacket
     [Key(24)]
     public string Hair { get; set; }
 
+    [Key(33)]
+    public bool HideHair { get; set; }
+
 }

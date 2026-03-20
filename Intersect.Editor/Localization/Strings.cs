@@ -3970,6 +3970,8 @@ Tick timer saved in server config.json.";
 
         public static LocalizedString twohanded = @"2 Hand";
 
+        public static LocalizedString hidehair = @"Hide Hair";
+
         public static LocalizedString type = @"Type:";
 
         public static Dictionary<int, LocalizedString> types = new Dictionary<int, LocalizedString>
@@ -3997,6 +3999,8 @@ Tick timer saved in server config.json.";
         public static LocalizedString ShieldProperties = @"Shield Properties:";
 
         public static LocalizedString weaponproperties = @"Weapon Properties";
+
+        public static LocalizedString helmetproperties = @"Helmet Properties";
 
     }
 

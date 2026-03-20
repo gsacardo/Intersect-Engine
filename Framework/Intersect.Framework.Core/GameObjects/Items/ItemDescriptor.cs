@@ -136,6 +136,9 @@ public partial class ItemDescriptor : DatabaseObject<ItemDescriptor>, IFolderabl
 
     public int EquipmentSlot { get; set; }
 
+    [Column("HideHair")]
+    public bool HideHair { get; set; }
+
     public bool TwoHanded { get; set; }
 
     public int SlotCount { get; set; }

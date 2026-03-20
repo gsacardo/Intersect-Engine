@@ -230,6 +230,7 @@ public partial class FrmItem : EditorForm
 
         grpEquipment.Text = Strings.ItemEditor.equipment;
         lblEquipmentSlot.Text = Strings.ItemEditor.slot;
+        chkHideHair.Text = Strings.ItemEditor.hidehair;
         grpStatBonuses.Text = Strings.ItemEditor.bonuses;
         lblStr.Text = Strings.ItemEditor.attackbonus;
         lblDef.Text = Strings.ItemEditor.defensebonus;
@@ -244,6 +245,7 @@ public partial class FrmItem : EditorForm
         lblStatRangeTo.Text = Strings.ItemEditor.StatRangeTo;
 
         grpWeaponProperties.Text = Strings.ItemEditor.weaponproperties;
+        grpHelmetProperties.Text = Strings.ItemEditor.helmetproperties;
         chk2Hand.Text = Strings.ItemEditor.twohanded;
         lblDamage.Text = Strings.ItemEditor.basedamage;
         lblCritChance.Text = Strings.ItemEditor.critchance;
@@ -526,6 +528,8 @@ public partial class FrmItem : EditorForm
             }
 
             cmbEquipmentSlot.SelectedIndex = mEditorItem.EquipmentSlot;
+            chkHideHair.Checked = mEditorItem.HideHair;
+            UpdateEquipmentPanels();
 
             // Whether this item type is stackable is not up for debate.
             chkStackable.Checked = false;
@@ -662,12 +666,32 @@ public partial class FrmItem : EditorForm
         {
             grpWeaponProperties.Hide();
             grpShieldProperties.Hide();
-
-            mEditorItem.Projectile = null;
-            mEditorItem.Tool = -1;
-            mEditorItem.Damage = 0;
-            mEditorItem.TwoHanded = false;
         }
+
+        grpHelmetProperties.Show();
+    }
+
+    private void UpdateEquipmentPanels()
+    {
+        var selectedIndex = cmbEquipmentSlot.SelectedIndex;
+        
+        if (selectedIndex == Options.Instance.Equipment.WeaponSlot)
+        {
+            grpShieldProperties.Hide();
+            grpWeaponProperties.Show();
+        }
+        else if (selectedIndex == Options.Instance.Equipment.ShieldSlot)
+        {
+            grpWeaponProperties.Hide();
+            grpShieldProperties.Show();
+        }
+        else
+        {
+            grpWeaponProperties.Hide();
+            grpShieldProperties.Hide();
+        }
+
+        grpHelmetProperties.Show();
     }
 
     private void cmbToolType_SelectedIndexChanged(object sender, EventArgs e)
@@ -682,6 +706,11 @@ public partial class FrmItem : EditorForm
     private void chk2Hand_CheckedChanged(object sender, EventArgs e)
     {
         mEditorItem.TwoHanded = chk2Hand.Checked;
+    }
+
+    private void chkHideHair_CheckedChanged(object sender, EventArgs e)
+    {
+        mEditorItem.HideHair = chkHideHair.Checked;
     }
 
     private void FrmItem_FormClosed(object sender, FormClosedEventArgs e)
