@@ -1620,6 +1620,8 @@ internal sealed partial class PacketHandler
             newChar.Hair = packet.Hair;
         }
 
+        newChar.HairColor = packet.HairColor;
+
         if (classBase.Sprites.Count > 0)
         {
             var spriteIndex = Math.Max(0, Math.Min(classBase.Sprites.Count - 1, packet.Sprite));

@@ -18,6 +18,7 @@ using Intersect.Framework.Reflection;
 using Intersect.GameObjects;
 using Intersect.Utilities;
 using Microsoft.Extensions.Logging;
+using GwenLabel = Intersect.Client.Framework.Gwen.Control.Label;
 
 // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
 
@@ -55,7 +56,21 @@ public partial class CharacterCreationWindow : Window
 
     private int _displaySpriteIndex = -1;
     private int _selectedHairIndex = -1;
+    private int _selectedHairColorIndex = 0;
     private readonly List<string> _availableHairs = [];
+    private static readonly Color[] HairColorOptions =
+    [
+        new(255, 255, 255, 255), // Branco
+        new(255, 40, 40, 40),    // Cinza escuro (quase preto)
+        new(255, 220, 60, 60),   // Vermelho
+        new(255, 255, 170, 50),  // Laranja
+        new(255, 255, 230, 80),  // Amarelo
+        new(255, 60, 200, 120),  // Verde
+        new(255, 70, 140, 255),  // Azul
+        new(255, 180, 90, 255),  // Roxo
+        new(255, 250, 0, 169), // Rosa
+    ];
+    private readonly Button[] _hairColorButtons = [];
     private readonly List<KeyValuePair<int, ClassSprite>> _femaleSprites = [];
     private readonly List<KeyValuePair<int, ClassSprite>> _maleSprites = [];
     private Button _backButton;
@@ -238,6 +253,41 @@ public partial class CharacterCreationWindow : Window
         _nextHairButton.SetStateTexture(ComponentState.Hovered, "button.arrow_right.hovered.png");
         _nextHairButton.SetStateTexture(ComponentState.Active, "button.arrow_right.active.png");
 
+        var colorPanel = new Panel(_previewContainer, "ColorPanel")
+        {
+            Dock = Pos.Bottom,
+            Height = 36,
+            ShouldDrawBackground = false,
+        };
+
+        var buttonSize = 28;
+        var buttonSpacing = 3;
+        var startX = 0;
+        for (var i = 0; i < HairColorOptions.Length; i++)
+        {
+            var index = i;
+            var colorButton = new Button(colorPanel, $"HairColor_{i}")
+            {
+                MinimumSize = new Point(buttonSize, buttonSize),
+                MaximumSize = new Point(buttonSize, buttonSize),
+                Text = "",
+            };
+
+            colorButton.SetPosition(startX + (i * (buttonSize + buttonSpacing)), 4);
+
+            var color = HairColorOptions[i];
+            colorButton.Clicked += (_, _) =>
+            {
+                _selectedHairColorIndex = index;
+                UpdateHairColorButtons();
+                UpdateDisplay();
+            };
+
+            _hairColorButtons = [.. _hairColorButtons, colorButton];
+        }
+
+        RebuildHairColorButtons();
+
         _buttonsPanel.SizeToChildren(recursive: true);
         _propertiesPanel.SizeToChildren(recursive: true);
     }
@@ -373,6 +423,7 @@ public partial class CharacterCreationWindow : Window
                 if (!string.IsNullOrEmpty(hairSource) && !string.Equals(hairSource, Strings.General.None, StringComparison.Ordinal))
                 {
                     paperdollContainer.Texture = ResolveHairTexture(hairSource);
+                    paperdollContainer.RenderColor = SelectedHairColor();
                 }
                 else
                 {
@@ -611,6 +662,42 @@ public partial class CharacterCreationWindow : Window
     private void ResetHair()
     {
         _selectedHairIndex = _availableHairs.Count > 0 ? 0 : -1;
+        _selectedHairColorIndex = 0;
+        UpdateHairColorButtons();
+    }
+
+    private Color SelectedHairColor() =>
+        _selectedHairColorIndex >= 0 && _selectedHairColorIndex < HairColorOptions.Length
+            ? HairColorOptions[_selectedHairColorIndex]
+            : HairColorOptions[0];
+
+    private void UpdateHairColorButtons()
+    {
+        for (var i = 0; i < _hairColorButtons.Length; i++)
+        {
+            var button = _hairColorButtons[i];
+            var isSelected = i == _selectedHairColorIndex;
+            var color = HairColorOptions[i];
+
+            button.ShouldDrawBackground = true;
+            button.RenderColor = color;
+            
+            if (isSelected)
+            {
+                button.Text = "✓";
+                button.TextColor = new Color(255, 255, 0, 255);
+                button.FontSize = 14;
+            }
+            else
+            {
+                button.Text = "";
+            }
+        }
+    }
+
+    private void RebuildHairColorButtons()
+    {
+        UpdateHairColorButtons();
     }
 
     private void _prevSpriteButton_Clicked(Base sender, MouseButtonState arguments)
@@ -700,8 +787,9 @@ public partial class CharacterCreationWindow : Window
         var charName = _nameInput.Text;
         var spriteKey = _genderMaleCheckbox.IsChecked ? _maleSprites[_displaySpriteIndex].Key : _femaleSprites[_displaySpriteIndex].Key;
         var hair = GetSelectedHair();
+        var hairColor = SelectedHairColor();
 
-        PacketSender.SendCreateCharacter(charName, cls.Id, spriteKey, hair ?? string.Empty);
+        PacketSender.SendCreateCharacter(charName, cls.Id, spriteKey, hair ?? string.Empty, hairColor);
         Globals.WaitingOnServer = true;
         _createButton.Disable();
         ChatboxMsg.ClearMessages();

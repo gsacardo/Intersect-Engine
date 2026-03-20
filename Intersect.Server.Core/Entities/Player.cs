@@ -1085,6 +1085,7 @@ public partial class Player : Entity
 
         pkt.Guild = Guild?.Name;
         pkt.GuildRank = GuildRank;
+        pkt.HairColor = HairColor;
 
         return pkt;
     }

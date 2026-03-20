@@ -354,6 +354,7 @@ public partial class Player : Entity, IPlayer
         CombatTimer = playerPacket.CombatTimeRemaining + Timing.Global.Milliseconds;
         Guild = playerPacket.Guild;
         Rank = playerPacket.GuildRank;
+        HairColor = playerPacket.HairColor;
 
         if (playerPacket.Equipment != null)
         {

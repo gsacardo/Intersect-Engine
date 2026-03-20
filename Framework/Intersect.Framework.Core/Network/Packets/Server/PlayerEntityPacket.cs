@@ -39,4 +39,8 @@ public partial class PlayerEntityPacket : EntityPacket
 
     [Key(31)]
     public int GuildRank { get; set; }
+
+
+    [Key(32)]
+    public Color HairColor { get; set; }
 }

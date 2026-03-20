@@ -116,6 +116,16 @@ public abstract partial class Entity : IEntity
 
     public string Hair { get; set; } = string.Empty;
 
+    [JsonIgnore, Column(nameof(HairColor))]
+    public string JsonHairColor
+    {
+        get => JsonConvert.SerializeObject(HairColor);
+        set => HairColor = !string.IsNullOrWhiteSpace(value) ? JsonConvert.DeserializeObject<Color>(value) : Color.White;
+    }
+
+    [NotMapped]
+    public Color HairColor { get; set; } = new Color(255, 255, 255, 255);
+
     public int Level { get; set; }
 
     [JsonIgnore, Column("Vitals")]

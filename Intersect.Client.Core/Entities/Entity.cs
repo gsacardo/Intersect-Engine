@@ -149,6 +149,8 @@ public partial class Entity : IEntity
 
     public Color Color { get; set; } = new Color(255, 255, 255, 255);
 
+    public Color HairColor { get; set; } = new Color(255, 255, 255, 255);
+
     public virtual Direction DirectionMoving { get; set; } = Direction.None;
 
     public long MoveTimer { get; set; }
@@ -1317,7 +1319,8 @@ public partial class Entity : IEntity
             }
             else if (string.Equals("Hair", paperdoll, StringComparison.Ordinal))
             {
-                DrawHair(renderColor);
+                var hairRenderColor = new Color(renderColor.A, HairColor.R, HairColor.G, HairColor.B);
+                DrawHair(hairRenderColor);
             }
             else if (equipSlot > -1)
             {

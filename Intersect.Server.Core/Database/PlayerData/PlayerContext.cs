@@ -140,6 +140,39 @@ public abstract partial class PlayerContext : IntersectDbContext<PlayerContext>,
         }
 
         EnsurePlayerHairColumn();
+        EnsurePlayerHairColorColumn();
+    }
+
+    private void EnsurePlayerHairColorColumn()
+    {
+        var databaseType = DatabaseType;
+        if (ColumnExists("Players", "HairColor"))
+        {
+            return;
+        }
+
+        ApplicationContext.Context.Value?.Logger.LogInformation(
+            "Applying schema compatibility patch for Players.HairColor on {DatabaseType}.",
+            databaseType
+        );
+
+        ExecuteNonQuery(
+            databaseType switch
+            {
+                Intersect.Config.DatabaseType.Sqlite => "ALTER TABLE \"Players\" ADD COLUMN \"HairColor\" TEXT NULL;",
+                Intersect.Config.DatabaseType.MySql => "ALTER TABLE `Players` ADD COLUMN `HairColor` longtext NULL;",
+                _ => throw new DatabaseTypeInvalidException(databaseType),
+            }
+        );
+
+        ExecuteNonQuery(
+            databaseType switch
+            {
+                Intersect.Config.DatabaseType.Sqlite => "UPDATE \"Players\" SET \"HairColor\" = '{\"A\":255,\"R\":255,\"G\":255,\"B\":255}' WHERE \"HairColor\" IS NULL;",
+                Intersect.Config.DatabaseType.MySql => "UPDATE `Players` SET `HairColor` = '{\"A\":255,\"R\":255,\"G\":255,\"B\":255}' WHERE `HairColor` IS NULL;",
+                _ => throw new DatabaseTypeInvalidException(databaseType),
+            }
+        );
     }
 
     private void EnsurePlayerHairColumn()

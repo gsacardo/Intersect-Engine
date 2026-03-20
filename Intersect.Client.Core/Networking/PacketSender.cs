@@ -182,9 +182,9 @@ public static partial class PacketSender
         Network.SendPacket(new UserRegistrationRequestPacket(username, password, email));
     }
 
-    public static void SendCreateCharacter(string name, Guid classId, int sprite, string hair)
+    public static void SendCreateCharacter(string name, Guid classId, int sprite, string hair, Color? hairColor = null)
     {
-        Network.SendPacket(new CreateCharacterPacket(name, classId, sprite, hair));
+        Network.SendPacket(new CreateCharacterPacket(name, classId, sprite, hair, hairColor));
     }
 
     public static void SendPickupItem(Guid mapId, int tileIndex, Guid uniqueId)
